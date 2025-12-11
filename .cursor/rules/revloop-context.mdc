@@ -1,0 +1,70 @@
+# RevLoop Context
+
+## About RevLoop
+
+**RevLoop** is a productivity quarterback that transforms voice dumps and call transcripts into actionable tasks routed to Linear and Notion.
+
+**Core Capabilities:**
+- Transcript processing (brain dumps, customer meetings, internal meetings)
+- Task extraction and categorization (coding → Linear, human → Notion, follow-up → Notion + Date)
+- Enhanced meeting analysis (buyer signals, deal health, action items)
+- Today.md management (daily planning and task tracking)
+
+## Integration with GTM Workflows
+
+**RevLoop's data structures support GTM workflows:**
+
+**Transcript Processing:**
+- `data/transcripts/` - Raw call transcripts
+- `data/meetings/` - Enhanced meeting notes with structured data
+- `MeetingMetadata.callType` - Call types: intro, demo, pov, followup, technical, pricing, closing, internal, general
+
+**Enhanced Meeting Types:**
+- `EnhancedMeeting` - Structured meeting analysis
+- `BuyerSignals` - Metrics, economic buyer, decision criteria, pain, champion
+- `DealHealth` - Sentiment, momentum, risk factors
+- `ActionItem` - Commitments with deadlines
+
+**Task Routing:**
+- Coding tasks → Linear
+- Human tasks → Notion
+- Follow-up tasks → Notion + Date
+
+## Using RevLoop in GTM Workflows
+
+**Call Debrief Workflow:**
+- Process transcripts from `data/transcripts/`
+- Generate enhanced meeting notes in `data/meetings/`
+- Extract buyer signals and deal health
+- Create action items and next steps
+
+**Discovery Prep Workflow:**
+- Review past call transcripts to identify patterns
+- Analyze similar calls for questions and objections
+- Use enhanced meeting notes to understand buyer signals
+
+**Outreach Workflow:**
+- Use transcript insights to personalize messaging
+- Reference buyer signals from past calls
+- Leverage deal health data to prioritize outreach
+
+## CLI Commands
+
+Sales reps can use RevLoop CLI commands alongside Cursor workflows:
+
+```bash
+# Process a transcript
+revloop process transcript.txt
+
+# Create today.md from transcript
+revloop today new transcript.txt
+
+# Sync tasks to Linear/Notion
+revloop sync all
+```
+
+**Note:** GTM workflows in Cursor complement RevLoop CLI - use both together for maximum productivity.
+
+---
+
+**Use this context when guiding sales reps through workflows. RevLoop's data and capabilities enhance the GTM workflows.**

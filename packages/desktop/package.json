@@ -1,0 +1,33 @@
+{
+  "name": "@revloop/desktop",
+  "version": "1.0.0",
+  "description": "Mac menu bar app for audio capture",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "build": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.revloop.desktop",
+    "productName": "RevLoop",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg"
+    },
+    "files": [
+      "src/**/*"
+    ]
+  },
+  "keywords": [],
+  "author": "Andy Carlson",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^34.5.8",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "canvas": "^3.2.0"
+  }
+}

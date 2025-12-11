@@ -1,0 +1,23 @@
+{
+  "name": "@revloop/cli",
+  "version": "1.0.0",
+  "description": "RevLoop CLI - Process transcripts, manage today.md, sync to Linear/Notion",
+  "type": "module",
+  "bin": {
+    "revloop": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@revloop/core": "workspace:*",
+    "commander": "^12.1.0",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2"
+  }
+}
