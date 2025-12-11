@@ -4,12 +4,16 @@ import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import { TodayManager } from '@revloop/core';
 import type { PriorityTask, NotionTask, LinearIssue } from '@revloop/core';
+import { syncPullCommand } from './sync-pull.js';
+import { syncPushCommand } from './sync-push.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DATA_DIR = resolve(__dirname, '../../../../data');
 
 export const syncCommand = new Command('sync')
-  .description('Sync tasks to Linear and Notion');
+  .description('Sync tasks to Linear and Notion, or sync client context with Notion')
+  .addCommand(syncPullCommand)
+  .addCommand(syncPushCommand);
 
 // sync notion - push human tasks to Notion
 syncCommand
