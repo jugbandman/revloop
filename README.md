@@ -244,7 +244,97 @@ Create a `.env` file:
 
 ```bash
 ANTHROPIC_API_KEY=sk-ant-...
+
+# Notion Sync Configuration (optional, for client context sync)
+NOTION_API_KEY=secret_...
+NOTION_CLIENT_CONTEXT_DB_ID=...
+NOTION_TRANSCRIPTS_DB_ID=...
+NOTION_MEETINGS_DB_ID=...
 ```
+
+### Notion Sync Setup
+
+RevLoop can sync client context bidirectionally with Notion, enabling you to:
+- Capture emails from Superhuman (via Zapier) → Notion → Local files
+- Capture transcripts from granola.ai → Notion → Local files
+- Push enhanced meeting notes from workflows → Notion
+
+**Step 1: Create Notion Databases**
+
+Create three databases in your Notion workspace:
+
+**1. Client Context Database** (`client-context`)
+- `Company` (Title) - Company name
+- `Contact` (Person or Text) - Primary contact
+- `Email Thread` (Text/Rich Text) - Email content
+- `Email Date` (Date) - When email was received
+- `Label` (Select) - Source label (hyperadaptive, hyperadaptive/progress, etc.)
+- `Status` (Select) - active, archived
+- `Last Synced` (Date) - Last time synced locally
+- `Local File Path` (Text) - Path to local file
+- `Enhanced Content` (Text/Rich Text) - AI-enhanced summary/notes
+- `Action Items` (Relation) - Links to action items (optional)
+
+**2. Transcripts Database** (`transcripts`)
+- `Title` (Title) - Meeting/call title
+- `Company` (Relation or Text) - Links to client-context
+- `Date` (Date) - Call date
+- `Transcript` (Text/Rich Text) - Full transcript
+- `Source` (Select) - granola.ai, manual, other
+- `Last Synced` (Date)
+- `Local File Path` (Text)
+- `Enhanced Meeting` (Relation) - Links to enhanced meeting notes
+
+**3. Enhanced Meetings Database** (`meetings`)
+- `Title` (Title)
+- `Company` (Relation) - Links to client-context
+- `Call Type` (Select) - intro, demo, discovery, pov, followup, technical, pricing, closing, internal, general
+- `Summary` (Text)
+- `Buyer Signals` (Text)
+- `Deal Health` (Text)
+- `Action Items` (Text or Relation)
+- `Local File Path` (Text)
+
+**Step 2: Get Notion API Key**
+
+1. Go to https://www.notion.so/my-integrations
+2. Click "New integration"
+3. Name it "RevLoop Sync"
+4. Select your workspace
+5. Copy the "Internal Integration Token" (starts with `secret_`)
+6. Add it to your `.env` as `NOTION_API_KEY`
+
+**Step 3: Share Databases with Integration**
+
+1. Open each database in Notion
+2. Click "..." menu → "Connections" → "Add connections"
+3. Select your "RevLoop Sync" integration
+4. Copy the database ID from the URL (the long string after the workspace name and before the `?`)
+5. Add to `.env`:
+   - `NOTION_CLIENT_CONTEXT_DB_ID=...`
+   - `NOTION_TRANSCRIPTS_DB_ID=...`
+   - `NOTION_MEETINGS_DB_ID=...`
+
+**Step 4: Install Dependencies**
+
+```bash
+pnpm install
+```
+
+**Step 5: Test the Connection**
+
+```bash
+# Pull client context from Notion
+revloop sync pull --clients
+
+# Pull transcripts from Notion
+revloop sync pull --transcripts
+
+# Push enhanced meetings to Notion
+revloop sync push --meetings --dry-run
+```
+
+See [Zapier Setup Guide](#zapier-setup) below for automating email and transcript capture.
 
 ---
 
@@ -282,8 +372,20 @@ revloop/
 │   │   ├── transcript-processor.ts
 │   │   ├── today-parser.ts
 │   │   └── today-manager.ts
+│   ├── notion-sync/           # Notion bidirectional sync
+│   │   ├── notion-client.ts
+│   │   ├── notion-puller.ts
+│   │   └── notion-pusher.ts
 │   └── cli/                   # Command-line tools
 ├── data/                       # Local storage
+│   ├── clients/               # Client context (from Notion)
+│   │   └── [company-name]/
+│   │       ├── emails/
+│   │       ├── context.json
+│   │       └── README.md
+│   ├── transcripts/          # Call transcripts
+│   ├── meetings/            # Enhanced meeting notes
+│   └── sync-mapping.json    # Notion ↔ Local file mapping
 └── package.json
 ```
 
@@ -301,13 +403,103 @@ pnpm build
 
 ---
 
+## Notion Sync Commands
+
+### Pull from Notion
+
+Download client context and transcripts from Notion to local files:
+
+```bash
+# Pull everything
+revloop sync pull --all
+
+# Pull only client context (emails)
+revloop sync pull --clients
+
+# Pull only transcripts
+revloop sync pull --transcripts
+```
+
+This creates:
+- `data/clients/[company-name]/emails/[date]-[subject].md` - Individual email files
+- `data/clients/[company-name]/context.json` - Company metadata and email index
+- `data/clients/[company-name]/README.md` - Quick reference
+- `data/transcripts/[date]-[title].txt` - Transcript files
+
+### Push to Notion
+
+Upload enhanced meeting notes and updates to Notion:
+
+```bash
+# Push enhanced meetings
+revloop sync push --meetings
+
+# Dry run to see what would be pushed
+revloop sync push --meetings --dry-run
+```
+
+Enhanced meetings are created by the `/call-debrief` workflow and saved to `data/meetings/`.
+
+---
+
+## Zapier Setup
+
+Automate capturing emails and transcripts into Notion, then sync to RevLoop.
+
+### Zap 1: Superhuman → Notion (Email Capture)
+
+**Trigger:** Superhuman - New Email with Label
+- Label pattern: `hyperadaptive*` (matches `hyperadaptive`, `hyperadaptive/progress`, etc.)
+
+**Action:** Notion - Create Database Item
+- Database: Your `client-context` database
+- Company: Extract from label (e.g., `hyperadaptive/progress` → "progress.com")
+- Email Thread: Email body + subject
+- Email Date: Email date
+- Label: Full label path
+- Status: "active"
+
+**Label Parsing Logic:**
+- `hyperadaptive` → Company: "hyperadaptive", Label: "hyperadaptive"
+- `hyperadaptive/progress` → Company: "progress.com", Label: "hyperadaptive/progress"
+- Extract company name from label hierarchy
+
+### Zap 2: granola.ai → Notion (Transcript Capture)
+
+**Option A: If granola.ai writes directly to Notion**
+- granola.ai already creates Notion pages → No Zap needed
+- Just ensure pages are in your `transcripts` database
+- Use `revloop sync pull --transcripts` to sync
+
+**Option B: If granola.ai sends notifications**
+- Trigger: granola.ai - New Transcript (or webhook)
+- Action: Notion - Create Database Item
+- Database: Your `transcripts` database
+- Title: Transcript title
+- Date: Call date
+- Transcript: Full transcript content
+- Source: "granola.ai"
+- Company: Extract from transcript metadata or link to client-context
+
+### Workflow
+
+1. **Email arrives in Superhuman** → Label it `hyperadaptive` or `hyperadaptive/[company]`
+2. **Zapier captures** → Creates record in Notion `client-context` database
+3. **Run `revloop sync pull --clients`** → Downloads to `data/clients/[company]/`
+4. **Use in workflows** → `/discovery-prep` automatically finds and uses client context
+5. **After call** → `/call-debrief` creates enhanced meeting
+6. **Run `revloop sync push --meetings`** → Uploads enhanced meeting to Notion
+
+---
+
 ## Integration Status
 
 - [x] Transcript processing with Claude
 - [x] today.md generation and parsing
 - [x] History tracking and deduplication
 - [x] GTM workflows (Cursor IDE)
-- [ ] Notion API integration (currently shows copy-paste format)
+- [x] Notion API integration (client context sync)
+- [ ] Notion API integration (task sync - still copy-paste format)
 - [ ] Linear API integration (currently shows copy-paste format)
 - [ ] Audio recording (future)
 

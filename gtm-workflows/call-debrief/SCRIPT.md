@@ -310,7 +310,31 @@ Anything else you learned from this call?"
 - Clear next steps (yes/no path)
 - Lessons learned
 
-I'll save this to `data/meetings/debrief-[company]-[date].md` so you can reference it and use it to update your CRM.
+I'll save this in two formats:
+1. Markdown file: `data/meetings/debrief-[company]-[date].md` - Easy to read and reference
+2. JSON file: `data/meetings/debrief-[company]-[date].json` - For syncing to Notion
+
+**ACTION:** 
+1. Save markdown debrief to `data/meetings/debrief-[company]-[date].md`
+2. Save enhanced meeting as JSON to `data/meetings/debrief-[company]-[date].json` using EnhancedMeeting format:
+   - metadata (MeetingMetadata)
+   - summary (string)
+   - actionItems (ActionItem[])
+   - keyQuotes (Quote[])
+   - buyerSignals (BuyerSignals, optional)
+   - dealHealth (DealHealth, optional)
+   - fullTranscript (string)
+   - processedAt (ISO date string)
+
+**Say:**
+
+"I've saved the debrief locally. To sync this enhanced meeting to Notion (so it's searchable and linked to your client context), run:
+
+\`\`\`bash
+revloop sync push --meetings
+\`\`\`
+
+This will upload the enhanced meeting notes to Notion, where they'll be linked to the client context and easily searchable.
 
 Would you like me to also draft a follow-up email based on the action items?"
 
@@ -392,8 +416,10 @@ If you need to prepare for your next call, run `/discovery-prep` or `/demo-prep`
 
 **RevLoop Integration:**
 - Use `data/transcripts/` for call transcripts
-- Save debriefs to `data/meetings/` as EnhancedMeeting format
+- Save debriefs to `data/meetings/` as EnhancedMeeting format (both .md and .json)
 - Leverage RevLoop's types (BuyerSignals, DealHealth, ActionItem)
+- Check `data/clients/[company-name]/` for existing client context before debrief
+- After saving, remind user to run `revloop sync push --meetings` to sync to Notion
 
 **AI-Accelerated Work:**
 - Per SOW, use AI extensively for analysis and drafting

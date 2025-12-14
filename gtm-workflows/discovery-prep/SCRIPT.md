@@ -57,7 +57,36 @@ Tell me about the prospect:
 
 **Say:**
 
-"Based on your ICP, let me help you evaluate this prospect's fit. Let me ask a few quick questions:
+"Before we dive deeper, let me check if we have any existing client context for this company. This could include past emails, previous calls, or notes."
+
+**ACTION:** Check if `data/clients/[company-name]/` exists (sanitize company name: lowercase, replace spaces/special chars with hyphens)
+
+**If client context exists:**
+
+**ACTION:** Read `data/clients/[company-name]/README.md` and `data/clients/[company-name]/context.json`
+
+**Say:**
+
+"I found existing context for this company! Here's what I see:
+
+[Summarize:
+- Number of emails/conversations
+- Key topics discussed
+- Contact information
+- Any previous call notes]
+
+This context will help us prepare more personalized questions. Let me review the email history to understand what's already been discussed."
+
+**ACTION:** Read recent email files from `data/clients/[company-name]/emails/` (if available)
+
+**Say:**
+
+"Based on the email history, I can see:
+- [Key points from emails]
+- [Topics already covered]
+- [Questions they've asked]
+
+Now let me help you evaluate this prospect's fit. Let me ask a few quick questions:
 
 1. Does their company size/stage match your target segment?
 2. Is the person you're meeting with a decision maker or influencer?
@@ -290,6 +319,8 @@ Come back after the call and run `/call-debrief` - I'll help you capture everyth
 - You have access to company-context/ files for answering questions
 - Check gtm-context/ for templates and examples
 - Use data/transcripts/ if they have past call transcripts
+- Check data/clients/[company-name]/ for existing client context (emails, notes)
+- If client context exists, reference it to personalize questions and preparation
 
 **Validation strategy:**
 - Use open questions when gathering context
