@@ -1,5 +1,7 @@
 # Notion Sync Setup Checklist
 
+> **DEPRECATED (Jan 30, 2026):** This RevLoop Notion sync was never operationalized. The code exists but databases were never set up. For current Notion integration, see the MCP server configured in the Obsidian vault's `.mcp.json` (uses HyperAdaptive token).
+
 Quick reference for setting up the Notion ↔ RevLoop bidirectional sync system.
 
 ## ✅ Implementation Complete
